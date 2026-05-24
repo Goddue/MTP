@@ -1,12 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
   FlatList,
   StyleSheet,
   TouchableOpacity,
+  Alert,
 } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { RootStackParamList } from '../../App';
+import { habitsStore } from '../store/habitsStore';
 import type { Habit } from '../types/Habit';
+
+type HabitsScreenNavProp = NativeStackNavigationProp<RootStackParamList, 'Habits'>;
 
 const test: Habit[] = [
   { id: '1', name: 'Сделать зарядку', isCompleted: false, createdAt: Date.now() },
@@ -15,19 +22,23 @@ const test: Habit[] = [
 ];
 
 export default function HabitsScreen() {
-  const [habits, setHabits] = useState<Habit[]>(test);
+    const navigation = useNavigation<HabitsScreenNavProp>();
+    const [habits, setHabits] = useState<Habit[]>(habitsStore.getHabits());
 
-  const toggleComplete = (id: string) => {
-    setHabits(prev =>
-      prev.map(habit =>
-        habit.id === id ? { ...habit, isCompleted: !habit.isCompleted } : habit
-      )
-    );
-  };
+    useEffect(() => {
+        const unsubscribe = habitsStore.subscribe(() => {
+        setHabits(habitsStore.getHabits());
+        });
+        return unsubscribe;
+    }, []);
 
-  const deleteHabit = (id: string) => {
-    setHabits(prev => prev.filter(habit => habit.id !== id));
-  };
+    const toggleComplete = (id: string) => {
+        habitsStore.toggleComplete(id);
+    };
+
+    const deleteHabit = (id: string) => {
+      habitsStore.deleteHabit(id);
+    }; 
 
   const renderItem = ({ item }: { item: Habit }) => (
     <View style={[styles.habitItem, item.isCompleted && styles.completedItem]}>
@@ -55,6 +66,9 @@ export default function HabitsScreen() {
           <Text style={styles.emptyText}>Нет привычек. Добавьте первую!</Text>
         }
       />
+      <TouchableOpacity style={styles.addButton} onPress={() => navigation.navigate('AddHabit')}>
+        <Text style={styles.addButtonText}>+ Добавить привычку</Text>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -78,7 +92,7 @@ const styles = StyleSheet.create({
 
     unchecked: { fontSize: 28, color: '#aaa' },
     checked: { fontSize: 28, color: '#4caf50' },
-    habitName: { flex: 1, fontSize: 18, color: '#333' },
+    habitName: { flex: 10, fontSize: 18, color: '#333' },
 
     completedItem: {
         backgroundColor: '#053a03'
@@ -90,8 +104,15 @@ const styles = StyleSheet.create({
     },
 
     deleteText: { fontSize: 20, color: '#a60000' },
-    emptyText: { textAlign: 'center', marginTop: 40, color: '#888', fontSize: 16 },
+    emptyText: { textAlign: 'center', marginTop: 40, color: '#1488', fontSize: 16 },
     cbText: {
-        flex: 0.05
-    }
+        flex: 1
+  },
+  addButton: {
+    backgroundColor: '#6200ee',
+    padding: 16,
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  addButtonText: { color: '#fff', fontSize: 18, fontWeight: '600' },
 });
