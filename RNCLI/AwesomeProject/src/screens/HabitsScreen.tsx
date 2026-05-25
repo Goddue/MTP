@@ -26,10 +26,11 @@ export default function HabitsScreen() {
     const [habits, setHabits] = useState<Habit[]>(habitsStore.getHabits());
 
     useEffect(() => {
-        const unsubscribe = habitsStore.subscribe(() => {
+      setHabits(habitsStore.getHabits());
+      const unsubscribe = habitsStore.subscribe(() => {
         setHabits(habitsStore.getHabits());
-        });
-        return unsubscribe;
+      });
+      return unsubscribe;
     }, []);
 
     const toggleComplete = (id: string) => {
