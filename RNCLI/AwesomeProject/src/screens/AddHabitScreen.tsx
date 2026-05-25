@@ -32,7 +32,6 @@ export default function AddHabitScreen({ navigation }: AddHabitScreenProps) {
       <Text style={styles.label}>Название привычки</Text>
       <TextInput
         style={styles.input}
-        placeholder="Например: Читать 30 минут"
         value={name}
         onChangeText={setName}
         autoFocus
